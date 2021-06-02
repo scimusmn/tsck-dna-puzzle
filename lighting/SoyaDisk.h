@@ -1,6 +1,14 @@
 #ifndef SOYA_DISK_H
 #define SOYA_DISK_H
 
+#ifndef LED_DATA
+#define LED_DATA 4
+#endif
+
+#ifndef LED_CLOCK
+#define LED_CLOCK 5
+#endif
+
 class Ring {
 private:
     CRGB *leds;
@@ -49,9 +57,9 @@ class Disk {
 private:
     int numRings, numLeds;
     Ring *rings;
-    CRGB *leds;
-
+    
 public:
+    CRGB *leds;
 
     void setup(int n_rings, const int *sizes) {
 	numRings = n_rings;
@@ -63,14 +71,18 @@ public:
 	leds = malloc(numLeds * sizeof(CRGB));
 	rings = malloc(numRings * sizeof(Ring));
 
+	//Serial.println(sizeof(leds) + sizeof(rings));
+
 	int offset = 0;
 	for (int i=0; i<numRings; i++) {
 	    rings[i] = Ring(leds + offset, sizes[i]);
 	    offset += sizes[i];
 	}
 
-	FastLED.addLeds<APA102, BGR>(leds, numLeds);
+	FastLED.addLeds<APA102, LED_DATA, LED_CLOCK, BGR>(leds, numLeds);
     }
+
+    setAll(CRGB color);
 
     Ring& operator[](int index) {
 	return rings[index];
