@@ -1,45 +1,18 @@
-#include <SoftwareSerial.h>
+#include "ID12LA.h"
 
-#include <ArxContainer.h>
+ID12LA reader;
 
-#include "Card.h"
+void onread(Card& card, void* data)
+{
+    Serial.println(card.getId());
+}
 
-SoftwareSerial rfid(2, 3);
-
-Card card;
-
-arx::map<String, String> cardMap;
 
 void setup()
 {
-    cardMap["67 00 99 b9 6a"] = "guanine";
-    cardMap["64 00 da 7e 67"] = "thymine";
-    cardMap["64 00 dc 24 5c"] = "adenine";
-    card.clear();
-    
+    pinMode(13, OUTPUT);
     Serial.begin(9600);
-    while (!Serial) {}
-    Serial.println("serial ready!");
-
-    rfid.begin(9600);
+    reader.setup(2, onread, NULL);
 }
 
-void loop()
-{
-    while (rfid.available()) {
-        char c = rfid.read();
-        if (c > 31)
-            card.addChar(c);
-    }
-
-    if (card.getStatus() == Card::Status::READ_OK) {
-        String id = card.getId();
-        String type = cardMap[id];
-        Serial.println(type);
-        card.clear();
-    }
-    else if (card.getStatus() == Card::Status::READ_BAD) {
-        Serial.println("bad read!");
-        card.clear();
-    }
-}
+void loop() { reader.update(); }

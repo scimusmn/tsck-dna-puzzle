@@ -56,7 +56,7 @@ CRGB baseColor(char base) {
 }
 
 void wedge(uint8_t a0, uint8_t a1, CRGB value) {
-    for (int i=3; i<10; i++)
+    for (int i=0; i<10; i++)
 	disk[i].setAngleRange(a0, a1, value);
 }
 
