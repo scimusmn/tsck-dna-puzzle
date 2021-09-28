@@ -9,9 +9,11 @@
 #define LED_CLOCK 5
 #endif
 
+#define SOYA_NUM_LEDS 255
+
 class Ring {
 private:
-    CRGB *leds;
+    CRGB *m_leds;
     int size;
 
     uint8_t angleToIndex(uint8_t angle) {
@@ -23,20 +25,21 @@ private:
     
 public:
         
-    Ring(CRGB *leds, int size) :
-	size(size), leds(leds)
-    {}
+    void setup(CRGB *led_array, int ring_size) {
+	m_leds = led_array;
+	size = ring_size;
+    }
 
     int getSize() { return size; }
 
-    void set(uint8_t index, CRGB value) { leds[index] = value; }
+    void set(uint8_t index, CRGB value) { m_leds[index] = value; }
     void setAll(CRGB value) {
 	for (int i=0; i<size; i++)
-	    leds[i] = value;
+	    m_leds[i] = value;
     }
 
     void setAngle(uint8_t angle, CRGB value) {
-	leds[angleToIndex(angle)] = value;
+	m_leds[angleToIndex(angle)] = value;
     }
     void setAngleRange(uint8_t a0, uint8_t a1, CRGB value) {
 	if (a1 < a0) {
@@ -48,41 +51,38 @@ public:
 	int stopIndex = angleToIndex(a1);
 
 	for (int i=startIndex; i<=stopIndex; i++)
-	    leds[i] = value;
+	    m_leds[i] = value;
     }
 };
 
 
+const int ringSizes[10] = { 48, 44, 40, 32, 28, 24, 20, 12, 6, 1 };
+
 class Disk {
 private:
-    int numRings, numLeds;
-    Ring *rings;
+    Ring rings[10];
+    CRGB *m_leds;
     
 public:
-    CRGB *leds;
-
-    void setup(int n_rings, const int *sizes) {
-	numRings = n_rings;
-
-	numLeds = 0;
-	for (int i=0; i<numRings; i++)
-	    numLeds += sizes[i];
-
-	leds = malloc(numLeds * sizeof(CRGB));
-	rings = malloc(numRings * sizeof(Ring));
-
-	//Serial.println(sizeof(leds) + sizeof(rings));
+    void setup(CRGB *led_array) {
+	m_leds = led_array;
 
 	int offset = 0;
-	for (int i=0; i<numRings; i++) {
-	    rings[i] = Ring(leds + offset, sizes[i]);
-	    offset += sizes[i];
+	for (int i=0; i<10; i++) {
+	    rings[i].setup(m_leds + offset, ringSizes[i]);
+	    offset += ringSizes[i];
 	}
-
-	FastLED.addLeds<APA102, LED_DATA, LED_CLOCK, BGR>(leds, numLeds);
     }
 
-    setAll(CRGB color);
+    void setAll(CRGB color) {
+	for (int i=0; i<SOYA_NUM_LEDS; i++)
+	    m_leds[i] = color;
+    }
+
+    void wedge(uint8_t a0, uint8_t a1, CRGB value) {
+	for (int i=0; i<10; i++)
+	    rings[i].setAngleRange(a0, a1, value);
+    }
 
     Ring& operator[](int index) {
 	return rings[index];
