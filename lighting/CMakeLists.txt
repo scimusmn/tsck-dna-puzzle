@@ -17,10 +17,12 @@ include_directories(${SRC_ROOT})
 # you should add your test files to the TEST_SOURCES variable
 
 set(TEST_SOURCES
-  ${SRC_ROOT}/test/test_main.c
+  ${SRC_ROOT}/test/test_main.cpp
 
-  ${SRC_ROOT}/test/mock_queue.c
-  ${SRC_ROOT}/test/mock_queue.test.c
+  ${SRC_ROOT}/test/mock_queue.cpp
+  ${SRC_ROOT}/test/mock_queue.test.cpp
+
+  ${SRC_ROOT}/test/SoyaDisk.test.cpp
   )
 
 add_executable(test EXCLUDE_FROM_ALL ${TEST_SOURCES})

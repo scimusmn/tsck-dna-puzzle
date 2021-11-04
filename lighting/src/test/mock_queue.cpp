@@ -30,7 +30,7 @@ size_t mock_queue_len() {
 
 void mock_queue_data(size_t size, void *data)
 {
-      struct mock_queue_node_t *node = malloc(sizeof(struct mock_queue_node_t));
+   struct mock_queue_node_t *node = (struct mock_queue_node_t *) malloc(sizeof(struct mock_queue_node_t));
    if (node == NULL) {
       fprintf(stderr, "WARNING: memory allocation for mock queue node failed!\n");
       return;
