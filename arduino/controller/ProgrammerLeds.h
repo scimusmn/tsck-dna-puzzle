@@ -2,12 +2,32 @@
 #define PROGRAMMER_LEDS_H
 
 #include "IntervalTimer.h"
+#include "TimeoutTimer.h"
+
+class LedTimeout : public TimeoutTimer {
+public:
+   int ledA, ledT, ledG, ledC;
+   LedTimeout(int ledA, int ledT, int ledG, int ledC, int timeout) :
+      ledA(ledA), ledT(ledT), ledG(ledG), ledC(ledC),
+      TimeoutTimer(timeout)
+   {}
+   
+   void onDeactivate() {
+      digitalWrite(ledA, 0);
+      digitalWrite(ledT, 0);
+      digitalWrite(ledG, 0);
+      digitalWrite(ledC, 0);
+   }
+};
+
+
 
 class ProgrammerLeds {
  public:
    ProgrammerLeds(int ledA, int ledT, int ledG, int ledC) :
       ledA(ledA), ledT(ledT), ledG(ledG), ledC(ledC),
-      flashing(false), ledFlash(400)
+      flashing(false), ledFlash(400),
+      ledTimeout(ledA, ledT, ledG, ledC, 1000)
    {
       pinMode(ledA, OUTPUT);
       pinMode(ledT, OUTPUT);
@@ -16,6 +36,8 @@ class ProgrammerLeds {
    }
 
    void update() {
+      ledTimeout.update();
+      
       if (flashing) {
 	 ledFlash.update();
 	 if (ledFlash.isOn()) {
@@ -34,6 +56,7 @@ class ProgrammerLeds {
    }
 
    void show(char base) {
+      flashing = false;
       digitalWrite(ledA, 0);
       digitalWrite(ledT, 0);
       digitalWrite(ledG, 0);
@@ -60,6 +83,8 @@ class ProgrammerLeds {
 	 // none should light up
 	 break;
       }
+
+      ledTimeout.trigger();
    }
 
    void flash() {
@@ -69,6 +94,7 @@ class ProgrammerLeds {
  private:
    bool flashing;
    IntervalTimer ledFlash;
+   LedTimeout ledTimeout;
    const int ledA, ledT, ledG, ledC;
 };
 
