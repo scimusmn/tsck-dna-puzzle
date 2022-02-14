@@ -1,4 +1,4 @@
-#include <Wire.h>
+#Includec <Wire.h>
 #include "ID12LA.h"
 
 #define PERIPHERAL_ADDRESS 0x75
@@ -12,7 +12,7 @@ void onread(Card& c, void* data)
 {
     card = c;
     digitalWrite(LED_PIN, HIGH);
-    delay(10);
+    delay(100);
     digitalWrite(LED_PIN, LOW);
 }
 

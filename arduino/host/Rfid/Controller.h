@@ -145,8 +145,14 @@ namespace smm {
 		Serial.print(address, HEX);
 		if (ok)
 		    Serial.println(": OK");
-		else
+		else {
 		    Serial.println(": FAIL");
+		    Wire.requestFrom(address, 6);
+		    Serial.print("requested 6 bytes, received ");
+		    Serial.println(Wire.available());
+		    while (Wire.available())
+			Serial.println(Wire.read(), HEX);
+		}
 	    }
 	}
     private:

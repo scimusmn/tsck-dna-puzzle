@@ -54,18 +54,20 @@ public:
 };
 
 
-const int ringSizes[10] = { 48, 44, 40, 32, 28, 24, 20, 12, 6, 1 };
-
 class Disk {
 private:
    Ring rings[10];
    CRGB *m_leds;
     
 public:
+   static const int ARRAY_SIZE = 255;
+   
    void setup(CRGB *led_array) {
       m_leds = led_array;
 
       int offset = 0;
+      const int ringSizes[10] = { 48, 44, 40, 32, 28, 24, 20, 12, 6, 1 };
+
       for (int i=0; i<10; i++) {
 	 rings[i].setup(m_leds + offset, ringSizes[i]);
 	 offset += ringSizes[i];

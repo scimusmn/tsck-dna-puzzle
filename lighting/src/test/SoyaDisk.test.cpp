@@ -12,6 +12,8 @@ typedef struct mock_CRGB {
 #include "sketch-lighting/SoyaDisk.h"
 
 
+/* ~~~~~~~~ ring tests ~~~~~~~~ */
+
 mu_test ring_4led();
 mu_test ring_48led();
 
@@ -20,9 +22,25 @@ void soya_ring_tests() {
    mu_run_test("ring with 4 LEDs", ring_4led);
    mu_run_test("ring with 48 LEDs and angle wrapping", ring_4led);
 }
-   
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+/* ~~~~~~~~ disk tests ~~~~~~~~ */
+
+mu_test disk_setall();
+mu_test disk_wedge();
+
+void soya_disk_tests() {
+   mu_run_test("set all LEDs on a disk", disk_setall);
+   mu_run_test("set all LEDs in a wedge", disk_wedge);
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Ring tests
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 
 mu_test ring_4led() {
    Ring ring;
@@ -107,4 +125,49 @@ mu_test ring_48led() {
       mu_assert_equal(leds[i].val, 1);
    
    return 0;
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Disk tests
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+mu_test disk_setall() {
+   CRGB leds[Disk::ARRAY_SIZE];
+   Disk disk;
+   disk.setup(leds);
+
+   CRGB val0 = {0};
+   disk.setAll(val0);
+
+   int offset = 0;
+   
+   for (int i=0; i<10; i++) {
+      const int size = disk[i].getSize();
+      for (int j=0; j<size; j++) {
+	 mu_assert_equal(leds[offset + j].val, 0);
+      }
+      offset += size;
+   }
+
+   return 0;
+}
+
+
+mu_test disk_wedge() {
+   CRGB leds[Disk::ARRAY_SIZE];
+   Disk disk;
+   disk.setup(leds);
+
+   CRGB val0 = {0};
+   CRGB val1 = {1};
+
+   disk.setAll(val0);
+   disk.wedge(0, 64, val1);
+
+   int offset = 0;
+   for (int i=0; 
 }

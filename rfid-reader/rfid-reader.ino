@@ -64,6 +64,7 @@ void onread_unknown(byte ra, byte id[5], void* d) {
 
 
 void setup() {
+  EEPROM.update(0, 0);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
   delay(1000);
