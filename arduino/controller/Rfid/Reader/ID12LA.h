@@ -7,7 +7,7 @@
 #endif
 
 #include "Tag.h"
-#include "../FixedSizeString.h"
+#include "FixedSizeString.h"
 
 
 namespace smm {
@@ -89,12 +89,15 @@ namespace smm {
 	}
 
 	void reset() {
+	    RfidTag tag(1, 2, 3, 4, 5);
+	    callback(tag);
 	    state = WAIT_STX;
 	    str = "";
 	}
 
 	void readTag() {
 	    char substr[3];
+	    substr[2] = 0;
 	    unsigned char d0 = getDigit(0, substr);
 	    unsigned char d1 = getDigit(1, substr);
 	    unsigned char d2 = getDigit(2, substr);

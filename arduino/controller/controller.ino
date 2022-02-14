@@ -60,10 +60,6 @@ unsigned long rfidUpdateTime;
 
 
 // rfid category handlers
-int getReader(byte address) {
-    return address - 0x70;
-}
-
 void sendGenome() {
     serial.send("genome", genome);
     lights.print("{genome:");
@@ -72,7 +68,7 @@ void sendGenome() {
 }
 
 void handleKnownTag(byte addr, char base) {
-   const int reader = getReader(addr);
+   const int reader = addr - 0x70;
    if (reader == 6) {
       // teaching reader
       leds.show(base);
@@ -154,21 +150,29 @@ void setup() {
     rfid.addReader(0x73);
     rfid.addReader(0x74);
     rfid.addReader(0x75);
+    rfid.addReader(0x76);
 
     rfid.onRead('G', onReadG);
     rfid.onRead('C', onReadC);
     rfid.onRead('T', onReadT);
     rfid.onRead('A', onReadA);
     rfid.onReadUnknown(onReadUnknown);
+
     rfid.onReadFailure([](byte addr) { serial.send("read-failure", addr); });
 
     rfidUpdateTime = millis() + 100;
     
-    teachG.onPress([](void *d) { teach('G'); });
+    /*teachG.onPress([](void *d) { teach('G'); });
     teachC.onPress([](void *d) {teach('C'); });
     teachT.onPress([](void *d) { teach('T'); });
     teachA.onPress([](void *d) { teach('A'); });
-    teachUndo.onPress([](void *d) { rfid.forgetLastTag(); });
+    teachUndo.onPress([](void *d) { rfid.forgetLastTag(); });*/
+
+    teachG.onPress([](void *d) { leds.show('G'); });
+    teachC.onPress([](void *d) { leds.show('C'); });
+    teachT.onPress([](void *d) { leds.show('T'); });
+    teachA.onPress([](void *d) { leds.show('A'); });
+    teachUndo.onPress([](void *d) { leds.flash(); });
 
     serial.send("arduino-ready");
     serial.send("known-tags", (int) rfid.numKnownTags());
@@ -188,6 +192,7 @@ void loop() {
 	rfidUpdateTime = millis() + 100;
 	rfid.update();
     }
-	
+
+    leds.update();
     updateButtons();
 }

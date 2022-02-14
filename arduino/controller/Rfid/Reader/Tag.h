@@ -1,10 +1,13 @@
 #pragma once
 
-#include <cstring>
+#include <string.h>
+#include "FixedSizeString.h"
 
 namespace smm {
     struct RfidTag {
-	RfidTag() {}
+	RfidTag() {
+	    memset(tagData, 0xff, 5 * sizeof(unsigned char));
+	}
 	RfidTag(unsigned char d0, unsigned char d1, unsigned char d2, unsigned char d3, unsigned char d4) {
 	    tagData[0] = d0;
 	    tagData[1] = d1;
