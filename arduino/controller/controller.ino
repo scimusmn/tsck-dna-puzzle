@@ -19,8 +19,6 @@
  * IN THE SOFTWARE.
  */
 
-#include "SoftwareSerial.h"
-
 #include "SerialController.h"
 #include "Button.h"
 #include "Rfid/Controller.h"
@@ -32,7 +30,6 @@ using namespace smm;
 
 // serial interfaces
 SerialController<> serial;
-SoftwareSerial lights(9, 2);
 
 
 // the RFID controller
@@ -62,9 +59,9 @@ unsigned long rfidUpdateTime;
 // rfid category handlers
 void sendGenome() {
     serial.send("genome", genome);
-    lights.print("{genome:");
-    lights.print(genome);
-    lights.println("}");
+    Serial1.print("{genome:");
+    Serial1.print(genome);
+    Serial1.println("}");
 }
 
 void handleKnownTag(byte addr, char base) {
@@ -141,7 +138,7 @@ void setup() {
     pinMode(LED, OUTPUT);
 
     serial.setup();
-    lights.begin(115200);
+    Serial1.begin(115200);
 
     rfid.setup();
     rfid.addReader(0x70);

@@ -1,7 +1,7 @@
 #include <FastLED.h>
 
-#define LED_DATA 4
-#define LED_CLOCK 5
+#define LED_DATA 5
+#define LED_CLOCK 4
 
 #define MAX_KEY_LEN 8
 #define MAX_VAL_LEN 7
@@ -11,7 +11,7 @@ SerialController serialController;
 
 #include "SoyaDisk.h"
 
-Disk diskA, diskB;
+Disk disk;
 CRGB leds[SOYA_NUM_LEDS];
 
 char genome[] = { 'A', 'A', 'A', 'A', 'A', 'A', 0 };
@@ -43,8 +43,7 @@ void processGenome(char *update) {
     length = length < 6 ? length : 6;
     for (int i=0; i<length; i++)
 	genome[i] = update[i];
-    updateDiskFromGenome(diskA);
-    updateDiskFromGenome(diskB);
+    updateDiskFromGenome(disk);
     FastLED.show();
     serialController.sendMessage("update-genome", genome);
 }
@@ -52,23 +51,17 @@ void processGenome(char *update) {
 void setup() {
     serialController.setup(115200, false);
     serialController.sendMessage("begin-setup");
-    
+
     serialController.sendMessage("allocate-memory");
-    diskA.setup(leds);
+    disk.setup(leds);
     serialController.sendMessage("setup leds");
     FastLED.addLeds<APA102, LED_DATA, LED_CLOCK, BGR>(leds, SOYA_NUM_LEDS);
-    FastLED.addLeds<APA102, LED_DATA, LED_CLOCK, BGR>(leds, SOYA_NUM_LEDS);
 
-    FastLED.setBrightness(16);
-    
     delay(100);
     serialController.sendMessage("add LEDs");
     processGenome("GATCGA");
-    //diskA.setAll(CRGB::Red);
     FastLED.show();
 
-    
-    
     serialController.sendMessage("finish-setup", 1);
     serialController.addCallback("genome", processGenome);
 }
@@ -92,7 +85,7 @@ void updateDiskFromGenome(Disk& disk) {
     const int smallWedge = 21;
     const int largeWedge = 128;
     int offset = 0;
-        
+
     for (int i=0; i<6; i++) {
 	disk.wedge(offset, offset+smallWedge, baseColor(genome[i]));
 	disk.wedge(offset + largeWedge, offset+largeWedge+smallWedge, baseColor(genome[i]));
@@ -106,4 +99,7 @@ void updateDiskFromGenome(Disk& disk) {
 
 void loop() {
     serialController.update();
+
+    uint8_t brightness = analogRead(A0) >> 2;
+    FastLED.setBrightness(dim8_raw(brightness));
 }
