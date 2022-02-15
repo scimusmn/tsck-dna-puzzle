@@ -1,138 +1,117 @@
-#ifndef SMM_RFID_CARD_H
-#define SMM_RFID_CARD_H
+#pragma once
 
-#ifndef ID12LA_TX
-#define ID12LA_TX 3
+#ifdef UNIT_TEST
+#include "../tests/FakeSerial.h"
+#else
+#include <SoftwareSerial.h>
 #endif
 
-#include <SoftwareSerial.h>
+#include "Tag.h"
+#include "FixedSizeString.h"
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-struct Card
-{
-    unsigned char id[5];
-    unsigned char checksum;
+namespace smm {
+    typedef void (*tagReadCallback)(RfidTag&);
+    
+    class ID12LA {
+    public:
+	void setup(int rxPin, tagReadCallback callback) {
+	    serial = new SoftwareSerial(rxPin, 3);
+	    serial->begin(9600);
+	    this->callback = callback;
+	    state = WAIT_STX;
+	}
+	void update() {
+	    while (serial->available())
+		eatChar(serial->read());
+	}
+	#ifdef UNIT_TEST
+	SoftwareSerial* getSerial() { return serial; }
+	#endif
+    private:
+	enum { WAIT_STX, READ_TAG, READ_NEWLINE, READ_ETX } state;
+	tagReadCallback callback;
+	SoftwareSerial *serial;
+	String16 str;
 
-    bool check()
-    {
-	int sum = 0;
-	for (int i=0; i<5; i++)
-	    sum ^= id[i];
+	bool charIsOkay(char c) {
+	    return c == '0' ||
+		c == '1' ||
+		c == '2' ||
+		c == '3' ||
+		c == '4' ||
+		c == '5' ||
+		c == '6' ||
+		c == '7' ||
+		c == '8' ||
+		c == '9' ||
+		c == 'A' ||
+		c == 'B' ||
+		c == 'C' ||
+		c == 'D' ||
+		c == 'E' ||
+		c == 'F';
+	}
 
-	return sum == checksum;
-    }
+	void eatChar(char c) {
+	    switch (state) {
+	    case WAIT_STX:
+		if (c == '\x02')
+		    state = READ_TAG;
+		break;
+		
+	    case READ_TAG:
+		if (str.length() < 12 && charIsOkay(c))
+		    str.append(c);
+		else if (str.length() == 12 && c == '\r')
+		    state = READ_NEWLINE;
+		else
+		    reset();
+		break;
 
-    String getId()
-    {
-        char buf[15];
-        snprintf(buf, 15*sizeof(char),
-                 "%02x %02x %02x %02x %02x",
-                 id[0], id[1], id[2], id[3], id[4]);
-        return String(buf);
-    }
+	    case READ_NEWLINE:
+		if (c == '\n')
+		    state = READ_ETX;
+		else
+		    reset();
+		break;
 
-    inline bool operator==(const Card& a)
-    {
-	if (a.id[0] != id[0])
-	    return false;
-	if (a.id[1] != id[1])
-	    return false;
-	if (a.id[2] != id[2])
-	    return false;
-	if (a.id[3] != id[3])
-	    return false;
-	if (a.id[4] != id[4])
-	    return false;
-	return true;
-    }
-};
+	    case READ_ETX:
+		if (c == '\x03')
+		    readTag();
+		reset();
+		break;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class ID12LA
-{
-public:
-    void setup(int rxPin, void (*cb)(Card&, void*), void* data)
-    {
-	serial = new SoftwareSerial(rxPin, ID12LA_TX);
-	serial->begin(9600);
-
-	bufferIndex = 0;
-	status = WAITING;
-
-	callback = cb;
-	callbackData = data;
-    }
-
-    void update()
-    {
-	while (serial->available()) {
-	    char c = serial->read();
-
-	    if (status == READING)
-		addChar(c);
-	    else {
-		if (c == 0x02)
-		    status = READING;
+	    default:
+		// should never get here
+		reset();
+		break;
 	    }
 	}
-    }
 
-private:
-    SoftwareSerial *serial;
-    
-    enum { READING, WAITING } status;
-    char buffer[15];
-    int bufferIndex;
-    Card card;
-        
-    void (*callback)(Card&, void*);
-    void* callbackData;
-
-    void addChar(char c)
-    {
-	buffer[bufferIndex] = c;
-	bufferIndex += 1;
-	if (bufferIndex >= 15) {
-	    bufferIndex = 0;
-	    status = WAITING;
-	    processBuffer();
-	}
-    }
-
-    unsigned char parse(int startIndex) {
-	char str[3];
-	str[0] = buffer[startIndex];
-	str[1] = buffer[startIndex + 1];
-	str[2] = 0;
-
-	return strtoul(str, NULL, 16);
-    }
-
-    void processBuffer()
-    {
-	// ensure buffer matches expected characters
-	if (buffer[12] != 0x0d ||
-	    buffer[13] != 0x0a ||
-	    buffer[14] != 0x03) {
-	    return; // bad read, go no further
+	void reset() {
+	    state = WAIT_STX;
+	    str = "";
 	}
 
-	// parse buffer from ascii hex into numbers
-	for (int i=0; i<5; i++)
-	    card.id[i] = parse(2*i);
-
-	card.checksum = parse(10);
-
-	if (!card.check()) {
-	    return; // bad checksum
+	void readTag() {
+	    char substr[3];
+	    substr[2] = 0;
+	    unsigned char d0 = getDigit(0, substr);
+	    unsigned char d1 = getDigit(1, substr);
+	    unsigned char d2 = getDigit(2, substr);
+	    unsigned char d3 = getDigit(3, substr);
+	    unsigned char d4 = getDigit(4, substr);
+	    unsigned char checksum = getDigit(5, substr);
+	    RfidTag tag(d0, d1, d2, d3, d4);
+	    if (tag.checksum() == checksum)
+		callback(tag);
 	}
 
-	callback(card, callbackData);
-    }
-};
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#endif
+	int getDigit(int index, char *substr) {
+	    substr[0] = str.c_str()[2*index];
+	    substr[1] = str.c_str()[(2*index) + 1];
+	    return strtol(substr, NULL, 16);
+	}
+    };
+}
