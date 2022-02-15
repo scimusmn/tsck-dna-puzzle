@@ -9,7 +9,6 @@
 #include "Tag.h"
 #include "FixedSizeString.h"
 
-
 namespace smm {
     typedef void (*tagReadCallback)(RfidTag&);
     
@@ -25,9 +24,9 @@ namespace smm {
 	    while (serial->available())
 		eatChar(serial->read());
 	}
-	#ifdef UNIT_TEST
+#ifdef UNIT_TEST
 	SoftwareSerial* getSerial() { return serial; }
-	#endif
+#endif
     private:
 	enum { WAIT_STX, READ_TAG, READ_NEWLINE, READ_ETX } state;
 	tagReadCallback callback;
@@ -56,7 +55,7 @@ namespace smm {
 	void eatChar(char c) {
 	    switch (state) {
 	    case WAIT_STX:
-		if (c == '\x02')
+		if (c == 0x02)
 		    state = READ_TAG;
 		break;
 		
@@ -77,7 +76,7 @@ namespace smm {
 		break;
 
 	    case READ_ETX:
-		if (c == '\x03')
+		if (c == 0x03)
 		    readTag();
 		reset();
 		break;

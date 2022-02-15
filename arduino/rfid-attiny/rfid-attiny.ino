@@ -16,7 +16,7 @@ ID12LA reader;
 
 #define READ_PIN 0
 #define LED_PIN 10
-#define FLASH_TIME 20
+#define FLASH_TIME 100
 
 
 void flash() {
@@ -26,7 +26,7 @@ void flash() {
 }
 
 
-void onReadTag(RfidTag t) {
+void onReadTag(RfidTag& t) {
     memcpy(tag.tagData, t.tagData, 5*sizeof(byte));
     flash();
 }
@@ -60,6 +60,7 @@ void setup() {
     Wire.onRequest(sendTag);
     Wire.onReceive(processCommand);
 
+    pinMode(LED_PIN, OUTPUT);
     flash();
 }
 
