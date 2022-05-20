@@ -123,7 +123,7 @@ void updateButtons() {
 
 void teach(byte category) {
     if (!teaching)
-	return;
+		return;
     serial.send("teaching-tag", unknownTag.toString().c_str());
     serial.send("teaching-as", category);
     rfid.teachTag(unknownTag, category);
@@ -159,17 +159,16 @@ void setup() {
 
     rfidUpdateTime = millis() + 100;
     
-    /*teachG.onPress([](void *d) { teach('G'); });
+    teachG.onPress([](void *d) { teach('G'); });
     teachC.onPress([](void *d) {teach('C'); });
     teachT.onPress([](void *d) { teach('T'); });
     teachA.onPress([](void *d) { teach('A'); });
-    teachUndo.onPress([](void *d) { rfid.forgetLastTag(); });*/
-
-    teachG.onPress([](void *d) { leds.show('G'); });
-    teachC.onPress([](void *d) { leds.show('C'); });
-    teachT.onPress([](void *d) { leds.show('T'); });
-    teachA.onPress([](void *d) { leds.show('A'); });
-    teachUndo.onPress([](void *d) { leds.flash(); });
+    teachUndo.onPress([](void *d) {
+		rfid.forgetLastTag();
+		leds.setAll(1);
+		delay(50);
+		leds.setAll(0);
+	});
 
     serial.send("arduino-ready");
     serial.send("known-tags", (int) rfid.numKnownTags());

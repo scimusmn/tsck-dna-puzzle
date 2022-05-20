@@ -21,9 +21,9 @@ namespace smm {
 	    // this table is intended for small (<32) sizes, so a simple for loop
 	    // should be fine, no need for anything fancy
 	    for (int i=0; i<m_numEntries; i++) {
-		if (m_keys[i] == key) {
-		    return m_values + i;
-		}
+			if (m_keys[i] == key) {
+			    return m_values + i;
+			}
 	    }
 	    return nullptr;
 	}
@@ -37,11 +37,11 @@ namespace smm {
 	 * @returns True if the entry was added successfully and false otherwise. */
 	bool add(keyT key, valT value) {
 	    if (m_numEntries < MAX_ENTRIES) {
-		int i = m_numEntries;
-		m_keys[i] = key;
-		m_values[i] = value;
-		m_numEntries++;
-		return true;
+			int i = m_numEntries;
+			m_keys[i] = key;
+			m_values[i] = value;
+			m_numEntries++;
+			return true;
 	    }
 	    else { return false; }
 	}
@@ -61,7 +61,7 @@ namespace smm {
 	keyT key(int index) { return m_keys[index]; }
 	valT value(int index) { return m_values[index]; }
 
-    private:
+    protected:
 	unsigned int m_numEntries;
 	keyT m_keys[MAX_ENTRIES];
 	valT m_values[MAX_ENTRIES];
