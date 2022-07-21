@@ -1,7 +1,7 @@
 tsck-dna-puzzle
 ===============
 
-This repository contains software and hardware files for the DNA Puzzle for TSCK.
+This repository contains software and hardware files for the [DNA Puzzle for TSCK].
 
 The puzzle consists of a steel double-helix with embedded RFID readers, individual
 "nucleotide" pieces containing RFID tags, and a large stele containing an LED
@@ -30,3 +30,6 @@ There are two broad categories of hardware included in this repository:
 
 * CAD files (mostly laser-cut pieces) stored in `laser-cutter`; and
 * electronics (both schematics and PCB layouts) stored in `electronics`.
+
+
+[DNA Puzzle for TSCK]: https://drive.google.com/drive/folders/1d9PLsUjKqNwdjKIzH2Ln1TuXTCMuD0Dc
