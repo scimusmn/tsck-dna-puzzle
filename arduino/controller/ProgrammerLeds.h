@@ -4,6 +4,14 @@
 #include "IntervalTimer.h"
 #include "TimeoutTimer.h"
 
+
+/* The LEDs on the programming board indicate the state of the
+ * chip that was just scanned. If it is already known, then
+ * the LED corresponding to what it is should light up; otherwise,
+ * every LED should flash until the user presses one of the teach buttons
+ * to set a value for it.
+ */
+
 class LedTimeout : public TimeoutTimer {
 public:
 	int ledA, ledT, ledG, ledC;
@@ -13,6 +21,7 @@ public:
 	{}
 	
 	void onDeactivate() {
+		// turn off all LEDs
 		digitalWrite(ledA, 0);
 		digitalWrite(ledT, 0);
 		digitalWrite(ledG, 0);
@@ -35,6 +44,7 @@ class ProgrammerLeds {
 		pinMode(ledC, OUTPUT);
 	}
 
+	// set every LED to the same state
 	void setAll(int state) {
 		digitalWrite(ledA, state);
 		digitalWrite(ledT, state);
@@ -43,6 +53,7 @@ class ProgrammerLeds {
 	}
 
 
+	// update the LEDs
 	void update() {
 		ledTimeout.update();
 	
@@ -57,6 +68,7 @@ class ProgrammerLeds {
 		}
 	}
 
+	// light up the LED for a specific base
 	void show(char base) {
 		flashing = false;
 		setAll(0);
