@@ -25,6 +25,7 @@
 #include "Rfid/Tag.h"
 #include "Queue.h"
 #include "ProgrammerLeds.h"
+#include "SmmTimeoutTimer.h"
 
 using namespace smm;
 
@@ -112,6 +113,7 @@ Button teachT(3);
 Button teachG(4);
 Button teachC(5);
 Button teachUndo(6);
+SmmTimeoutTimer forgetAllTimeout(5000);
 
 void updateButtons() {
     teachG.update();
@@ -164,6 +166,10 @@ void setup() {
     teachT.onPress([](void *d) { teach('T'); });
     teachA.onPress([](void *d) { teach('A'); });
     teachUndo.onPress([](void *d) {
+    	forgetAllTimeout.start();
+    });
+    teachUndo.onRelease([](void *d) {
+    	forgetAllTimeout.stop();
 		rfid.forgetLastTag();
 		leds.setAll(1);
 		delay(50);
@@ -187,6 +193,13 @@ void loop() {
     if (millis() > rfidUpdateTime) {
 	rfidUpdateTime = millis() + 100;
 	rfid.update();
+    }
+
+    if (forgetAllTimeout.triggered()) {
+    	rfid.forgetEveryTag();
+    	leds.setAll(1);
+    	delay(50);
+    	leds.setAll(0);
     }
 
     leds.update();

@@ -41,7 +41,12 @@ namespace smm {
 		}
 
 		void undo() {
+			if (this->m_numEntries == 0) return;
 			this->m_numEntries -= 1;
+		}
+
+		void reset() {
+			this->m_numEntries = 0;
 		}
 
     	private:
@@ -125,6 +130,11 @@ namespace smm {
 	    if (tags.size() == 0)
 		return;
 		tags.undo();
+		tags.save();
+	}
+
+	void forgetEveryTag() {
+		tags.reset();
 		tags.save();
 	}
 
